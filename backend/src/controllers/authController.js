@@ -266,3 +266,8 @@ console.log(token,"token resetPassword")
     return res.status(500).json({ message: 'Server error' });
   }
 };
+export const logout = () => {
+  // If using cookies for JWT
+    res.clearCookie("token");
+    return res.json({ message: "Logged out successfully" });
+};

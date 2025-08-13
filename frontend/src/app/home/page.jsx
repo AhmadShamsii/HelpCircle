@@ -1,7 +1,7 @@
 'use client';
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { apiClient } from './../utils/api';
+import { apiClient } from './../../utils/api';
 import { Table, Spin, message, Button } from 'antd';
 import { useRouter } from 'next/navigation';
 

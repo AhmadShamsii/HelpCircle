@@ -15,7 +15,7 @@ const onFinish = async (values) => {
     redirect: false,
     email: values.email,
     password: values.password,
-    callbackUrl: `${window.location.origin}/dashboard`
+    callbackUrl: `${window.location.origin}/home`
   });
 
   if (res?.error) {
@@ -24,7 +24,7 @@ const onFinish = async (values) => {
   } else {
     // success
     message.success("Signed in");
-    router.push("/dashboard");
+    router.push("/home");
   }
 };
 
