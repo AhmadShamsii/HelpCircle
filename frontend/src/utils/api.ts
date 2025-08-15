@@ -6,11 +6,14 @@ const backend =
   process.env.BACKEND_URL ||
   "http://localhost:5000";
 
-export async function apiClient() {
-  const session = await getSession();
-  const token = (session as any)?.accessToken;
+export async function apiClient(tokenOverride?: string) {
+  let token = tokenOverride;
+  if (!token) {
+    const session = await getSession();
+    token = (session as any)?.accessToken;
+  }
   const instance = axios.create({
-    baseURL: backend + "/api",
+    baseURL: backend.replace(/\/+$/, "") + "/api",
     headers: {
       Authorization: token ? `Bearer ${token}` : undefined,
       "Content-Type": "application/json",
