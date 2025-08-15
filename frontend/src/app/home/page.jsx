@@ -17,17 +17,18 @@ export default function Dashboard() {
   }, [session, status]);
 
   useEffect(() => {
+    if (status !== 'authenticated' || !session) return;
     (async () => {
       try {
         setLoading(true);
-        const client = await apiClient();
+        const client = await apiClient((session as any)?.accessToken);
         const resp = await client.get('/users');
         setUsers(resp.data.users);
       } catch (err) {
         message.error(err?.response?.data?.message || 'Failed to fetch users');
       } finally { setLoading(false); }
     })();
-  }, []);
+  }, [status, session]);
 
   if (status === 'loading' || !session) return <div className="min-h-screen flex items-center justify-center"><Spin /></div>;
 
