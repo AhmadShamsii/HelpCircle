@@ -9,8 +9,9 @@ const backend =
 export async function apiClient() {
   const session = await getSession();
   const token = (session as any)?.accessToken;
+  const base = String(backend).replace(/\/+$/, "");
   const instance = axios.create({
-    baseURL: backend + "/api",
+    baseURL: base + "/api",
     headers: {
       Authorization: token ? `Bearer ${token}` : undefined,
       "Content-Type": "application/json",
