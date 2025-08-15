@@ -16,7 +16,6 @@ app.use(cors({
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'], // 🔑 ensure Authorization is allowed
 }));
-
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 
