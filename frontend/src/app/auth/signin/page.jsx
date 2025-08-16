@@ -1,7 +1,7 @@
 'use client';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { Button, Form, Input, Typography, message } from 'antd';
+import { Button, Form, Input, Typography, message, Checkbox } from 'antd';
 import { GoogleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -11,10 +11,11 @@ export default function SignIn() {
   const router = useRouter();
 
 const onFinish = async (values) => {
-  const res = await signIn("credentials", {
+  const res = await signIn('credentials', {
     redirect: false,
     email: values.email,
     password: values.password,
+    remember: values.remember ? 'true' : 'false',
     callbackUrl: `${window.location.origin}/home`
   });
 
@@ -36,8 +37,11 @@ const onFinish = async (values) => {
           <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email required' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Password required' }]}>
+          <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Password required' }]}> 
             <Input.Password />
+          </Form.Item>
+          <Form.Item name="remember" valuePropName="checked" initialValue={false}>
+            <Checkbox>Remember me</Checkbox>
           </Form.Item>
           <Form.Item>
             <Button loading={loading} type="primary" htmlType="submit" block>

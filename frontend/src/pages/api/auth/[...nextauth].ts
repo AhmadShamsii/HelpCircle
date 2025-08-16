@@ -36,7 +36,8 @@ export const authOptions: NextAuthOptions = {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: credentials.email,
-            password: credentials.password
+            password: credentials.password,
+            remember: credentials.remember === 'true'
           })
         });
 
@@ -65,8 +66,8 @@ export const authOptions: NextAuthOptions = {
           id: data.user.id || data.user._id,
           name: data.user.name,
           email: data.user.email,
-          // attach token for callbacks (optional)
-          accessToken: data.token
+          accessToken: data.token,
+          refreshToken: data.refreshToken
         };
       }
     }),
@@ -84,12 +85,14 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.user = user;
         token.accessToken = (user as any).accessToken || token.accessToken;
+        token.refreshToken = (user as any).refreshToken || token.refreshToken;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = token.user as any || session.user;
+      session.user = (token.user as any) || session.user;
       (session as any).accessToken = token.accessToken;
+      (session as any).refreshToken = token.refreshToken;
       return session;
     },
     async redirect({ url, baseUrl }) {
