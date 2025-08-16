@@ -24,15 +24,41 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
 
-    const existing = await User.findOne({ email: String(email).toLowerCase() });
-    if (existing) {
+    let user = await User.findOne({ email: String(email).toLowerCase() });
+
+    // If user exists via social login, allow them to register locally by
+    // setting a password and switching provider to 'local' instead of
+    // forcing the user to sign in with the social provider only.
+    if (user && user.provider !== 'local') {
+      const hash = await bcrypt.hash(password, SALT_ROUNDS);
+      const verifyToken = generateToken();
+      user.name = name || user.name;
+      user.password = hash;
+      user.provider = 'local';
+      user.isVerified = false;
+      user.emailVerificationTokenHash = hashToken(verifyToken);
+      user.emailVerificationTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+      await user.save();
+
+      const verifyUrl = `${FRONTEND_URL}/auth/verify-email?token=${verifyToken}&email=${encodeURIComponent(user.email)}`;
+
+      await sendEmail(
+        user.email,
+        'Verify Your Email',
+        `<h2>Welcome, ${user.name || ''}</h2><p>Please verify your email by clicking below:</p><a href="${verifyUrl}" target="_blank">Verify Email</a>`
+      );
+
+      return res.status(200).json({ message: 'Account updated. Verification email sent.' });
+    }
+
+    if (user) {
       return res.status(400).json({ message: 'Email is already registered.' });
     }
 
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
     const verifyToken = generateToken();
-    const user = await User.create({
+    user = await User.create({
       name,
       email: String(email).toLowerCase(),
       password: hash,
@@ -98,8 +124,11 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email: String(email).toLowerCase() });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (user.provider && user.provider !== 'local') {
-      return res.status(400).json({ message: `Please sign in using ${user.provider}` });
+    // Allow login regardless of provider as long as a password exists. This
+    // prevents confusing errors when a user initially registered with Google
+    // but later sets a local password.
+    if (!user.password) {
+      return res.status(400).json({ message: `Please sign in using ${user.provider || 'your original provider'}` });
     }
 
     const valid = await bcrypt.compare(password, user.password);

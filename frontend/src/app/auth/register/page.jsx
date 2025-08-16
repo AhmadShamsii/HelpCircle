@@ -1,7 +1,6 @@
-// src/app/(public)/auth/register/page.tsx  OR pages/auth/register.tsx
 'use client';
 import { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, message, Card, Typography } from 'antd';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
@@ -20,7 +19,6 @@ export default function Register() {
     const base = getApiBase();
     try {
       setLoading(true);
-      // debug: console.log(base);
       const resp = await axios.post(`${base}/api/auth/register`, values, { timeout: 10000 });
       message.success(resp.data?.message || 'Registered. Check email to verify.');
       router.push('/auth/signin');
@@ -34,18 +32,23 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md p-6 bg-white shadow">
-        <h2 className="text-xl mb-4">Register</h2>
-        <Form onFinish={onFinish} layout="vertical">
-          <Form.Item name="name" label="Name"><Input /></Form.Item>
-          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email required' }]}><Input /></Form.Item>
-          <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Password required' }]}><Input.Password /></Form.Item>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <Card className="w-full max-w-md" title={<Typography.Title level={3} className="m-0">Register</Typography.Title>}>
+        <Form onFinish={onFinish} layout="vertical" autoComplete="off">
+          <Form.Item name="name" label="Name">
+            <Input allowClear />
+          </Form.Item>
+          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email required' }]}> 
+            <Input type="email" autoComplete="email" allowClear />
+          </Form.Item>
+          <Form.Item name="password" label="Password" rules={[{ required: true, message: 'Password required' }]}> 
+            <Input.Password autoComplete="new-password" allowClear />
+          </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>Register</Button>
+            <Button type="primary" htmlType="submit" loading={loading} block>Register</Button>
           </Form.Item>
         </Form>
-      </div>
+      </Card>
     </div>
   );
 }
