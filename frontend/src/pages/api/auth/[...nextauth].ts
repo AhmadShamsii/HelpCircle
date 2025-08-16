@@ -81,7 +81,30 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET,
   session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      // When using OAuth (e.g., Google) we need to obtain our backend JWT.
+      if (account && account.provider === 'google') {
+        const base = getBackendBase();
+        try {
+          const res = await fetch(`${base}/api/auth/oauth-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: token.email, name: token.name, provider: 'google' })
+          });
+          const data = await res.json();
+          if (res.ok && data?.token) {
+            token.accessToken = data.token;
+            token.user = {
+              id: data.user.id || data.user._id,
+              name: data.user.name,
+              email: data.user.email
+            };
+          }
+        } catch (e) {
+          console.error('[NextAuth.jwt] oauth-login failed', e);
+        }
+      }
+
       if (user) {
         token.user = user;
         token.accessToken = (user as any).accessToken || token.accessToken;
